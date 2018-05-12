@@ -15,7 +15,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -26,18 +25,13 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Toast;
-
+import butterknife.BindView;
 import com.alibaba.fastjson.JSON;
-import com.alipay.sdk.app.H5PayCallback;
-import com.alipay.sdk.app.PayTask;
-import com.alipay.sdk.util.H5PayResultModel;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -45,17 +39,6 @@ import com.baidu.location.LocationClientOption;
 import com.blankj.utilcode.util.FileUtils;
 import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
-
-import org.kymjs.kjframe.http.HttpCallBack;
-import org.kymjs.kjframe.ui.ViewInject;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import butterknife.BindView;
 import dm.com.cn.zhongxinshopstation.R;
 import dm.com.cn.zhongxinshopstation.activity.imageutils.CropImageActivity;
 import dm.com.cn.zhongxinshopstation.bean.Location;
@@ -67,6 +50,12 @@ import dm.com.cn.zhongxinshopstation.http.KJHttpUtil;
 import dm.com.cn.zhongxinshopstation.inteface.JSOnclickInterface;
 import dm.com.cn.zhongxinshopstation.utila.AtKeyBoardUp;
 import dm.com.cn.zhongxinshopstation.utila.JSInterface;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import org.kymjs.kjframe.http.HttpCallBack;
+import org.kymjs.kjframe.ui.ViewInject;
 
 /**
  * Created by Zhangchen on 2018/3/5.
@@ -153,41 +142,6 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
                 webView.loadUrl("javascript:automaticLogin(\" " + data.get(data.size()-1).getUserid() + "\","
                                     + data.get(data.size()-1).getPassword() + ")");
             }
-        }
-
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        public boolean shouldOverrideUrlLoading(final WebView view, WebResourceRequest request) {
-            String url = request.getUrl()
-                                .toString();
-            if (!(url.startsWith("http") || url.startsWith("https"))) {
-                return true;
-            }
-            final PayTask task = new PayTask(MainWebActivity.this);
-            boolean isIntercepted = task.payInterceptorWithUrl(url, true, new H5PayCallback() {
-                @Override
-                public void onPayResult(final H5PayResultModel result) {
-                    // 支付结果返回
-                    final String url = result.getReturnUrl();
-                    if (!TextUtils.isEmpty(url)) {
-                        MainWebActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                view.loadUrl(url);
-                            }
-                        });
-                    }
-                }
-            });
-
-            /**
-             * 判断是否成功拦截
-             * 若成功拦截，则无需继续加载该URL；否则继续加载
-             */
-            if (!isIntercepted) {
-                view.loadUrl(url);
-            }
-            return true;
         }
     };
 
@@ -438,20 +392,6 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
      * 回调事件处理
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (result != null) {
-            if (result.getContents() == null) {
-                Toast.makeText(MainWebActivity.this, "二维码有误，请重新选择", Toast.LENGTH_LONG)
-                     .show();
-            } else {
-                if (result.getContents()
-                          .contains("http") || result.getContents()
-                                                     .contains("https")) {
-                    webView.loadUrl(result.getContents());
-                }
-                //                Toast.makeText(MainWebActivity.this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
-            }
-        }
         if (requestCode == FLAG_CHOOSE_IMG && resultCode == RESULT_OK) {
             if (data != null) {
                 Uri uri = data.getData();
@@ -517,11 +457,11 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
                 String data = Configer.HTTP_MAIN + replace;
 
                 Log.e(TAG, "success  " + data + " " + index);
-                Log.d(TAG, "javascript:setImage(\" " + data + "\",\" " + index + "\")");
-                webView.loadUrl("javascript:setImage(\" " + data + "\",\" " + index + "\")");
+                Log.d(TAG, "javascript:setImage(\"" + data + "\",\"" + index + "\")");
+                webView.loadUrl("javascript:setImage(\"" + data + "\",\"" + index + "\")");
             } else {
                 Log.e(TAG, "xing" + " " + index);
-                webView.loadUrl("javascript:setImage(\" " + path + "\",\" " + index + "\")");
+                webView.loadUrl("javascript:setImage(\"" + path + "\",\"" + index + "\")");
             }
         }
 
