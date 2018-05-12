@@ -64,6 +64,8 @@ import org.kymjs.kjframe.ui.ViewInject;
 public class MainWebActivity extends BaseActivity implements JSOnclickInterface {
 
     private static final String TAG = "WebViewH5Activity";
+    /* 相机请求码 */
+    private static final int REQUEST_CAMERA = 0;
 
     private static final int FLAG_CHOOSE_IMG = 5;// 从相册中选择
 
@@ -139,8 +141,10 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
             db = new UserInfoDb(MainWebActivity.this);
             List<UserInfoBean> data = db.getData(UserInfoBean.class);
             if (data != null && data.size() > 0) {
-                webView.loadUrl("javascript:automaticLogin(\" " + data.get(data.size()-1).getUserid() + "\","
-                                    + data.get(data.size()-1).getPassword() + ")");
+                webView.loadUrl("javascript:automaticLogin(\" " + data.get(data.size() - 1)
+                                                                      .getUserid() + "\"," + data.get(
+                    data.size() - 1)
+                                                                                                 .getPassword() + ")");
             }
         }
     };
@@ -150,7 +154,12 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
      */
     @Override
     public void onClickCamers(String check) {
-        Log.d("测试", check);
+        if (ContextCompat.checkSelfPermission(MainWebActivity.this,
+                                              Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            //就跳到让用户选择是否授权  给个码走返回方法
+            ActivityCompat.requestPermissions(MainWebActivity.this, new String[]{
+                Manifest.permission.READ_EXTERNAL_STORAGE}, 1001);
+        }
         if (check != null) {
             index = check;
         } else {
@@ -166,12 +175,12 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
     public void onClickLocation(double x, double y) {
         if (isAvilible(this, "com.baidu.BaiduMap")) {
             ToaS(this, "即将用百度地图打开导航");
-            Uri mUri = Uri.parse("geo:" + y + "," + x);
+            Uri    mUri    = Uri.parse("geo:" + y + "," + x);
             Intent mIntent = new Intent(Intent.ACTION_VIEW, mUri);
             startActivity(mIntent);
         } else if (isAvilible(this, "com.autonavi.minimap")) {
             ToaS(this, "即将用高德地图打开导航");
-            Uri mUri = Uri.parse("geo:" + y + "," + x);
+            Uri    mUri   = Uri.parse("geo:" + y + "," + x);
             Intent intent = new Intent("android.intent.action.VIEW", mUri);
             startActivity(intent);
         } else {
@@ -340,16 +349,32 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
     }
 
     /**
+     * 申请相机权限
+     */
+    private void requestCameraPermission() {
+        // 相机权限未被授予，需要申请！
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+            // 如果访问了，但是没有被授予权限，则需要告诉用户，使用此权限的好处
+            Log.i(TAG, "申请权限说明！");
+
+            ActivityCompat.requestPermissions(MainWebActivity.this,
+                                              new String[]{Manifest.permission.CAMERA},
+                                              REQUEST_CAMERA);
+        } else {
+            // 第一次申请，就直接申请
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
+                                              REQUEST_CAMERA);
+        }
+    }
+
+    /**
      * 调用相机
      */
     private void openGamera() {
-        if (ContextCompat.checkSelfPermission(MainWebActivity.this,
-                                              Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-
-        } else {
-            ActivityCompat.requestPermissions(MainWebActivity.this,
-                                              new String[]{Manifest.permission.CAMERA},
-                                              1);//1 can be another integer
+        if (ActivityCompat.checkSelfPermission(this,
+                                               Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            // 权限未被授予
+            requestCameraPermission();
         }
 
         String status = Environment.getExternalStorageState();
