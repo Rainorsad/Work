@@ -131,7 +131,7 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
         webSettings.setDatabaseEnabled(true);
         webSettings.setDomStorageEnabled(true);//允许DCOM
 
-//        webView.loadUrl("file:///android_asset/test.html");
+        //        webView.loadUrl("file:///android_asset/test.html");
         webView.loadUrl(Configer.LOGINHTTP);
 
         /**
@@ -143,7 +143,6 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
     }
 
 
-
     WebViewClient webViewClient = new WebViewClient() {
 
         @Override
@@ -151,7 +150,8 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
             db = new UserInfoDb(MainWebActivity.this);
             List<UserInfoBean> data = db.getData(UserInfoBean.class);
             if (data != null && data.size() > 0) {
-                webView.loadUrl("javascript:automaticLogin(\" " + data.get(0).getUserid()  + "\"," + data.get(0).getPassword()+")");
+                webView.loadUrl("javascript:automaticLogin(\" " + data.get(data.size()-1).getUserid() + "\","
+                                    + data.get(data.size()-1).getPassword() + ")");
             }
         }
 
@@ -159,7 +159,7 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
         @Override
         public boolean shouldOverrideUrlLoading(final WebView view, WebResourceRequest request) {
             String url = request.getUrl()
-                    .toString();
+                                .toString();
             if (!(url.startsWith("http") || url.startsWith("https"))) {
                 return true;
             }
@@ -196,9 +196,10 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
      */
     @Override
     public void onClickCamers(String check) {
+        Log.d("测试", check);
         if (check != null) {
             index = check;
-        }else {
+        } else {
             index = null;
         }
         getPhoto();
@@ -211,14 +212,12 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
     public void onClickLocation(double x, double y) {
         if (isAvilible(this, "com.baidu.BaiduMap")) {
             ToaS(this, "即将用百度地图打开导航");
-            Uri    mUri    = Uri.parse(
-                    "geo:" + y + "," + x );
+            Uri mUri = Uri.parse("geo:" + y + "," + x);
             Intent mIntent = new Intent(Intent.ACTION_VIEW, mUri);
             startActivity(mIntent);
         } else if (isAvilible(this, "com.autonavi.minimap")) {
             ToaS(this, "即将用高德地图打开导航");
-            Uri    mUri   = Uri.parse(
-                    "geo:" + y + "," + x );
+            Uri mUri = Uri.parse("geo:" + y + "," + x);
             Intent intent = new Intent("android.intent.action.VIEW", mUri);
             startActivity(intent);
         } else {
@@ -246,17 +245,16 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
         option.setNeedDeviceDirect(true);
         mLocationClient.setLocOption(option);
         mLocationClient.start();
-        Log.d(TAG, "测试");
 
         int i = 0;
         for (; ; ) {
-            if (i<30) {
+            if (i < 30) {
                 i++;
                 if (locationIndex) {
                     locationIndex = false;
                     break;
                 }
-            }else {
+            } else {
                 break;
             }
             try {
@@ -265,15 +263,13 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
                 e.printStackTrace();
             }
         }
-        Gson gson = new Gson();
+        Gson   gson = new Gson();
         String data = null;
         if (locatdata != null) {
             data = gson.toJson(locatdata);
-            Log.d(TAG, data);
-        }else {
-            locatdata = new Location(null,null);
+        } else {
+            locatdata = new Location(null, null);
             data = gson.toJson(locatdata);
-            Log.d(TAG, data);
         }
         return data;
     }
@@ -283,16 +279,9 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
      */
     @Override
     public void onClickSaveCookei(String s) {
-        UserInfoBean userInfoBean = new UserInfoBean();
-        userInfoBean.setPassword("123");
-        userInfoBean.setUserid("hahah");
+        UserInfoBean userInfoBean = JSON.parseObject(s, UserInfoBean.class);
         db = new UserInfoDb(MainWebActivity.this);
-        List<UserInfoBean> data = db.getData(UserInfoBean.class);
-        if (data != null && data.size() > 0) {
-            db.upData(userInfoBean, "id=0");
-        } else {
-            db.saveData(userInfoBean);
-        }
+        db.saveData(userInfoBean);
     }
 
     /**
@@ -328,7 +317,7 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
         path = null;
         dialog = new Dialog(MainWebActivity.this, R.style.MyDialog);
         View v = LayoutInflater.from(MainWebActivity.this)
-                .inflate(R.layout.item_photodialog, null);
+                               .inflate(R.layout.item_photodialog, null);
         final LinearLayout lin_main  = (LinearLayout) v.findViewById(R.id.lin_main);
         Button             bt_photo  = (Button) v.findViewById(R.id.bt_photo);
         Button             bt_img    = (Button) v.findViewById(R.id.bt_imgs);
@@ -336,8 +325,8 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
 
         final View view = lin_main;
         view.animate()
-                .translationY(0)
-                .setDuration(500);
+            .translationY(0)
+            .setDuration(500);
 
         bt_photo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -358,7 +347,7 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
             @Override
             public void onClick(View v) {
                 ObjectAnimator animator = ObjectAnimator.ofFloat(view, "translationY",
-                        lin_main.getHeight() + 500);
+                                                                 lin_main.getHeight() + 500);
                 animator.setDuration(500);
                 animator.addListener(new Animator.AnimatorListener() {
                     @Override
@@ -401,12 +390,12 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
      */
     private void openGamera() {
         if (ContextCompat.checkSelfPermission(MainWebActivity.this,
-                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                                              Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
 
         } else {
             ActivityCompat.requestPermissions(MainWebActivity.this,
-                    new String[]{Manifest.permission.CAMERA},
-                    1);//1 can be another integer
+                                              new String[]{Manifest.permission.CAMERA},
+                                              1);//1 can be another integer
         }
 
         String status = Environment.getExternalStorageState();
@@ -450,14 +439,17 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if(result != null) {
-            if(result.getContents() == null) {
-                Toast.makeText(MainWebActivity.this, "二维码有误，请重新选择", Toast.LENGTH_LONG).show();
+        if (result != null) {
+            if (result.getContents() == null) {
+                Toast.makeText(MainWebActivity.this, "二维码有误，请重新选择", Toast.LENGTH_LONG)
+                     .show();
             } else {
-                if (result.getContents().contains("http") || result.getContents().contains("https")){
+                if (result.getContents()
+                          .contains("http") || result.getContents()
+                                                     .contains("https")) {
                     webView.loadUrl(result.getContents());
                 }
-//                Toast.makeText(MainWebActivity.this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
+                //                Toast.makeText(MainWebActivity.this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
             }
         }
         if (requestCode == FLAG_CHOOSE_IMG && resultCode == RESULT_OK) {
@@ -465,13 +457,13 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
                 Uri uri = data.getData();
                 if (!TextUtils.isEmpty(uri.getAuthority())) {
                     Cursor cursor = getContentResolver().query(uri, new String[]{
-                            MediaStore.Images.Media.DATA}, null, null, null);
+                        MediaStore.Images.Media.DATA}, null, null, null);
                     if (null == cursor) {
                         return;
                     }
                     cursor.moveToFirst();
                     String path = cursor.getString(
-                            cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                        cursor.getColumnIndex(MediaStore.Images.Media.DATA));
                     cursor.close();
                     Intent intent = new Intent(MainWebActivity.this, CropImageActivity.class);
                     intent.putExtra("path", path);
@@ -515,20 +507,21 @@ public class MainWebActivity extends BaseActivity implements JSOnclickInterface 
             super.onSuccess(t);
             PhotoCall photoCall = JSON.parseObject(t, PhotoCall.class);
             Log.e(TAG, photoCall.toString());
-            if (dialog != null){
+            if (dialog != null) {
                 dialog.dismiss();
             }
             if (photoCall.getRetCode()
-                    .equals("0")) {
+                         .equals("0")) {
                 String replace = photoCall.getData()
-                        .replace("\\", "/");
+                                          .replace("\\", "/");
                 String data = Configer.HTTP_MAIN + replace;
 
-                Log.e(TAG, "success  " + data);
-                webView.loadUrl("javascript:setImage(\" " + data  + "\",\" " + index + "\")");
+                Log.e(TAG, "success  " + data + " " + index);
+                Log.d(TAG, "javascript:setImage(\" " + data + "\",\" " + index + "\")");
+                webView.loadUrl("javascript:setImage(\" " + data + "\",\" " + index + "\")");
             } else {
-                Log.e(TAG, "xing");
-                webView.loadUrl("javascript:setImage(\" " + path  + "\",\" " + index + "\")");
+                Log.e(TAG, "xing" + " " + index);
+                webView.loadUrl("javascript:setImage(\" " + path + "\",\" " + index + "\")");
             }
         }
 
